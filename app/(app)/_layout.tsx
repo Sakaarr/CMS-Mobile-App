@@ -5,8 +5,12 @@ import { Text, View } from "react-native";
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
-    overview: "📊", projects: "📁", boq: "📋",
-  };
+  overview: "📊",
+  projects: "📁",
+  dpr: "📋",
+  "material-request": "📦",
+  boq: "💰",
+};
   return (
     <View style={{ alignItems: "center" }}>
       <Text style={{ fontSize: 20 }}>{icons[name] ?? "📄"}</Text>
@@ -65,6 +69,15 @@ export default function AppLayout() {
       tabBarIcon: ({ focused }) => <TabIcon name="boq" focused={focused} />,
     }}
   />
+  <Tabs.Screen
+  name="material-request"
+  options={{
+    title: "Materials",
+    tabBarIcon: ({ focused }) => (
+      <TabIcon name="material-request" focused={focused} />
+    ),
+  }}
+/>
 </Tabs>
   );
 }
