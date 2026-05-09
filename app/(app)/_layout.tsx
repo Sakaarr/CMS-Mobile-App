@@ -1,8 +1,7 @@
-import { useEffect } from "react";
-import { Tabs } from "expo-router";
 import { useAuthStore } from "@/src/store/auth.store";
-import { router } from "expo-router";
-import { View, Text } from "react-native";
+import { router, Tabs } from "expo-router";
+import { useEffect } from "react";
+import { Text, View } from "react-native";
 
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
@@ -30,35 +29,42 @@ export default function AppLayout() {
 
   return (
     <Tabs
-      screenOptions={{
-        headerStyle: { backgroundColor: "#fff" },
-        headerTintColor: "#111827",
-        headerTitleStyle: { fontWeight: "600" },
-        tabBarActiveTintColor: "#2563eb",
-        tabBarStyle: { borderTopColor: "#e5e7eb" },
-      }}
-    >
-      <Tabs.Screen
-        name="overview"
-        options={{
-          title: "Overview",
-          tabBarIcon: ({ focused }) => <TabIcon name="overview" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="projects"
-        options={{
-          title: "Projects",
-          tabBarIcon: ({ focused }) => <TabIcon name="projects" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="boq"
-        options={{
-          title: "BOQ",
-          tabBarIcon: ({ focused }) => <TabIcon name="boq" focused={focused} />,
-        }}
-      />
-    </Tabs>
+  screenOptions={{
+    headerStyle: { backgroundColor: "#fff" },
+    headerTintColor: "#111827",
+    headerTitleStyle: { fontWeight: "600" },
+    tabBarActiveTintColor: "#2563eb",
+    tabBarStyle: { borderTopColor: "#e5e7eb" },
+  }}
+>
+  <Tabs.Screen
+    name="overview"
+    options={{
+      title: "Overview",
+      tabBarIcon: ({ focused }) => <TabIcon name="overview" focused={focused} />,
+    }}
+  />
+  <Tabs.Screen
+    name="projects"
+    options={{
+      title: "Projects",
+      tabBarIcon: ({ focused }) => <TabIcon name="projects" focused={focused} />,
+    }}
+  />
+  <Tabs.Screen
+    name="dpr"
+    options={{
+      title: "DPR",
+      tabBarIcon: ({ focused }) => <TabIcon name="dpr" focused={focused} />,
+    }}
+  />
+  <Tabs.Screen
+    name="boq"
+    options={{
+      title: "BOQ",
+      tabBarIcon: ({ focused }) => <TabIcon name="boq" focused={focused} />,
+    }}
+  />
+</Tabs>
   );
 }
