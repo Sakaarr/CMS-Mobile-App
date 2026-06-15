@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
 
 export function useProjects() {
@@ -40,5 +40,28 @@ export function useMilestones(projectId: string) {
       return res.data.data as any[];
     },
     enabled: !!projectId,
+  });
+}
+
+export function useSites(projectId: string) {
+  return useQuery({
+    queryKey: ["sites", projectId],
+    queryFn: async () => {
+      const res = await apiClient.get(`/projects/${projectId}/sites`);
+      return res.data.data as any[];
+    },
+    enabled: !!projectId,
+  });
+}
+
+export function useUpdateProjectStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ projectId, status }: { projectId: string; status: string }) =>
+      apiClient.patch(`/projects/${projectId}/status`, { status }),
+    onSuccess: (_, { projectId }) => {
+      qc.invalidateQueries({ queryKey: ["project", projectId] });
+      qc.invalidateQueries({ queryKey: ["projects"] });
+    },
   });
 }

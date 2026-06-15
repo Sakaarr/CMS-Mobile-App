@@ -54,6 +54,7 @@ export default function AppLayout() {
       <Tabs.Screen name="expense" options={{ title: "Expenses", tabBarIcon: ({ focused }) => <TabIcon name="expense" focused={focused} /> }} />
       <Tabs.Screen name="boq" options={{ title: "BOQ", tabBarIcon: ({ focused }) => <TabIcon name="boq" focused={focused} /> }} />
       <Tabs.Screen name="settings" options={{ title: "Settings", tabBarIcon: ({ focused }) => <TabIcon name="settings" focused={focused} /> }} />
+      <Tabs.Screen name="projects/[id]" options={{ href: null }}/>
     </Tabs>
   );
 }
