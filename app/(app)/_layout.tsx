@@ -13,6 +13,11 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     "material-request": "📦",
     expense: "🧾",
     boq: "💰",
+<<<<<<< Updated upstream
+=======
+    safety: "🛡️",
+    documents: "📂",
+>>>>>>> Stashed changes
     settings: "⚙️",
   };
   return (
