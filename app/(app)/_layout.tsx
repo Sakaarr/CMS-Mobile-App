@@ -13,11 +13,8 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     "material-request": "📦",
     expense: "🧾",
     boq: "💰",
-<<<<<<< Updated upstream
-=======
     safety: "🛡️",
     documents: "📂",
->>>>>>> Stashed changes
     settings: "⚙️",
   };
   return (
@@ -60,6 +57,8 @@ export default function AppLayout() {
       <Tabs.Screen name="boq" options={{ title: "BOQ", tabBarIcon: ({ focused }) => <TabIcon name="boq" focused={focused} /> }} />
       <Tabs.Screen name="settings" options={{ title: "Settings", tabBarIcon: ({ focused }) => <TabIcon name="settings" focused={focused} /> }} />
       <Tabs.Screen name="projects/[id]" options={{ href: null }}/>
+      <Tabs.Screen name="safety"options={{title: "Safety",tabBarIcon: ({ focused }) => <TabIcon name="safety" focused={focused} />,}}/>
+      <Tabs.Screen name="documents"options={{title: "Documents",tabBarIcon: ({ focused }) => <TabIcon name="documents" focused={focused} />,}}/>
     </Tabs>
   );
 }
