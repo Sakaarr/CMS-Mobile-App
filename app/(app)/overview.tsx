@@ -4,6 +4,7 @@ import {
 } from "react-native";
 import { useProjectStats, useProjects } from "@/src/hooks/useProjects";
 import { useAuthStore } from "@/src/store/auth.store";
+import { SyncBanner } from "@/src/components/SyncBanner";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "#10b981", draft: "#94a3b8", planning: "#60a5fa",
@@ -17,6 +18,7 @@ export default function OverviewScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <SyncBanner />
       <Text style={styles.greeting}>
         Hello, {user?.full_name?.split(" ")[0]} 👋
       </Text>

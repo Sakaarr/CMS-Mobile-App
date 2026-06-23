@@ -1,13 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { cacheQueryData, getCachedQueryData } from "@/src/lib/offline";
 
 export function useProjects() {
   return useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
       const res = await apiClient.get("/projects");
-      return res.data.data as any[];
+      const data = res.data.data as any[];
+      await cacheQueryData("projects", data);
+      return data;
     },
+    placeholderData: () => getCachedQueryData<any[]>("projects") ?? undefined,
   });
 }
 
@@ -16,9 +20,12 @@ export function useProject(projectId: string) {
     queryKey: ["project", projectId],
     queryFn: async () => {
       const res = await apiClient.get(`/projects/${projectId}`);
-      return res.data.data;
+      const data = res.data.data;
+      await cacheQueryData(`project_${projectId}`, data);
+      return data;
     },
     enabled: !!projectId,
+    placeholderData: () => getCachedQueryData<any>(`project_${projectId}`) ?? undefined,
   });
 }
 

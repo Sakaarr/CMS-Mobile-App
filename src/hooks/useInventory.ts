@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { isOnline, addToQueue, cacheQueryData, getCachedQueryData } from "@/src/lib/offline";
+import { Alert } from "react-native";
 
 export interface Warehouse {
   id: string;
@@ -75,9 +77,12 @@ export function useMaterialRequests(projectId: string) {
       const res = await apiClient.get(
         `/projects/${projectId}/material-requests`
       );
-      return res.data.data as MaterialRequest[];
+      const data = res.data.data as MaterialRequest[];
+      await cacheQueryData(`material-requests_${projectId}`, data);
+      return data;
     },
     enabled: !!projectId,
+    placeholderData: () => getCachedQueryData<MaterialRequest[]>(`material-requests_${projectId}`) ?? undefined,
   });
 }
 
@@ -95,8 +100,19 @@ export function useLowStockAlerts(projectId?: string) {
 export function useCreateMR(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) =>
-      apiClient.post(`/projects/${projectId}/material-requests`, data),
+    mutationFn: async (data: any) => {
+      if (!isOnline()) {
+        await addToQueue({
+          label: "Create Material Request",
+          url: `/projects/${projectId}/material-requests`,
+          method: "post",
+          data,
+        });
+        Alert.alert("Saved offline", "Material request will sync when you're back online.");
+        return { offline: true };
+      }
+      return (await apiClient.post(`/projects/${projectId}/material-requests`, data)).data.data;
+    },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["material-requests", projectId] }),
   });
@@ -105,8 +121,18 @@ export function useCreateMR(projectId: string) {
 export function useSubmitMR(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (mrId: string) =>
-      apiClient.post(`/material-requests/${mrId}/submit`),
+    mutationFn: async (mrId: string) => {
+      if (!isOnline()) {
+        await addToQueue({
+          label: "Submit Material Request",
+          url: `/material-requests/${mrId}/submit`,
+          method: "post",
+        });
+        Alert.alert("Saved offline", "MR submission will sync when you're back online.");
+        return { offline: true };
+      }
+      return (await apiClient.post(`/material-requests/${mrId}/submit`)).data.data;
+    },
     onSuccess: () =>
       qc.invalidateQueries({ queryKey: ["material-requests", projectId] }),
   });
