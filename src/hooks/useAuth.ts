@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import * as SecureStore from "expo-secure-store";
 import { apiClient } from "@/src/lib/api";
 import { useAuthStore } from "@/src/store/auth.store";
 import { router } from "expo-router";
+import { setItem } from "@/src/lib/storage";
 
 export function useLogin() {
   const { setAuth } = useAuthStore();
@@ -14,18 +14,24 @@ export function useLogin() {
       tenant_slug: string;
     }) => {
       const { tenant_slug, ...credentials } = data;
-      await SecureStore.setItemAsync("tenant_slug", tenant_slug);
+      await setItem("tenant_slug", tenant_slug);
       const res = await apiClient.post("/auth/login", credentials);
       return { tokens: res.data.data, tenant_slug };
     },
     onSuccess: async ({ tokens, tenant_slug }) => {
-      await SecureStore.setItemAsync("access_token", tokens.access_token);
-      await SecureStore.setItemAsync("refresh_token", tokens.refresh_token);
+      await setItem("access_token", tokens.access_token);
+      await setItem("refresh_token", tokens.refresh_token);
       const meRes = await apiClient.get("/auth/me");
       const user = meRes.data.data;
-      await SecureStore.setItemAsync("user", JSON.stringify(user));
+      await setItem("user", JSON.stringify(user));
       setAuth(user, tenant_slug);
-      router.replace("/(app)/overview");
+
+      // Route based on must_change_password flag
+      if (user.must_change_password) {
+        router.replace("/(auth)/change-password");
+      } else {
+        router.replace("/(app)/overview");
+      }
     },
   });
 }

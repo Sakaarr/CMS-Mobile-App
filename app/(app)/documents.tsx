@@ -297,34 +297,34 @@ function DocumentDetail({ doc, onBack }: { doc: any; onBack: () => void }) {
 }
 
 // Mobile Documents hook
-export function useDocuments(projectId: string, params?: { search?: string; category?: string }) {
-  const { useQuery } = require("@tanstack/react-query");
-  const { apiClient } = require("@/src/lib/api");
-  return useQuery({
-    queryKey: ["documents", projectId, params],
-    queryFn: async () => {
-      const p = new URLSearchParams();
-      if (params?.search) p.set("search", params.search);
-      if (params?.category) p.set("category", params.category);
-      const res = await apiClient.get(`/projects/${projectId}/documents?${p}`);
-      return res.data;
-    },
-    enabled: !!projectId,
-  });
-}
+// export function useDocuments(projectId: string, params?: { search?: string; category?: string }) {
+//   const { useQuery } = require("@tanstack/react-query");
+//   const { apiClient } = require("@/src/lib/api");
+//   return useQuery({
+//     queryKey: ["documents", projectId, params],
+//     queryFn: async () => {
+//       const p = new URLSearchParams();
+//       if (params?.search) p.set("search", params.search);
+//       if (params?.category) p.set("category", params.category);
+//       const res = await apiClient.get(`/projects/${projectId}/documents?${p}`);
+//       return res.data;
+//     },
+//     enabled: !!projectId,
+//   });
+// }
 
-export function useDocumentSummary(projectId: string) {
-  const { useQuery } = require("@tanstack/react-query");
-  const { apiClient } = require("@/src/lib/api");
-  return useQuery({
-    queryKey: ["document-summary", projectId],
-    queryFn: async () => {
-      const res = await apiClient.get(`/projects/${projectId}/document-summary`);
-      return res.data.data;
-    },
-    enabled: !!projectId,
-  });
-}
+// export function useDocumentSummary(projectId: string) {
+//   const { useQuery } = require("@tanstack/react-query");
+//   const { apiClient } = require("@/src/lib/api");
+//   return useQuery({
+//     queryKey: ["document-summary", projectId],
+//     queryFn: async () => {
+//       const res = await apiClient.get(`/projects/${projectId}/document-summary`);
+//       return res.data.data;
+//     },
+//     enabled: !!projectId,
+//   });
+// }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9fafb" },
