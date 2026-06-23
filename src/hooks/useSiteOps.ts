@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { isOnline, addToQueue, cacheQueryData, getCachedQueryData } from "@/src/lib/offline";
+import { Alert } from "react-native";
 
 export interface DPRSummary {
   id: string;
@@ -67,9 +69,11 @@ export function useDPRs(projectId: string, siteId?: string) {
     queryFn: async () => {
       const p = siteId ? `?site_id=${siteId}` : "";
       const res = await apiClient.get(`/projects/${projectId}/dprs${p}`);
+      await cacheQueryData(`dprs_${projectId}_${siteId ?? ""}`, res.data);
       return res.data as { data: DPRSummary[]; total: number };
     },
     enabled: !!projectId,
+    placeholderData: () => getCachedQueryData<{ data: DPRSummary[]; total: number }>(`dprs_${projectId}_${siteId ?? ""}`) ?? undefined,
   });
 }
 
@@ -100,8 +104,20 @@ export function useSiteOpsSummary(projectId: string) {
 export function useCreateDPR(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: any) =>
-      apiClient.post(`/projects/${projectId}/dprs`, data),
+    mutationFn: async (data: any) => {
+      if (!isOnline()) {
+        await addToQueue({
+          label: "Create DPR",
+          url: `/projects/${projectId}/dprs`,
+          method: "post",
+          data,
+        });
+        Alert.alert("Saved offline", "DPR will sync when you're back online.");
+        return { offline: true };
+      }
+      const res = await apiClient.post(`/projects/${projectId}/dprs`, data);
+      return res.data.data;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dprs", projectId] });
       qc.invalidateQueries({ queryKey: ["site-ops-summary", projectId] });
@@ -112,8 +128,18 @@ export function useCreateDPR(projectId: string) {
 export function useSubmitDPR(projectId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (dprId: string) =>
-      apiClient.post(`/dprs/${dprId}/submit`),
+    mutationFn: async (dprId: string) => {
+      if (!isOnline()) {
+        await addToQueue({
+          label: "Submit DPR",
+          url: `/dprs/${dprId}/submit`,
+          method: "post",
+        });
+        Alert.alert("Saved offline", "DPR submission will sync when you're back online.");
+        return { offline: true };
+      }
+      return (await apiClient.post(`/dprs/${dprId}/submit`)).data.data;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["dprs", projectId] });
       qc.invalidateQueries({ queryKey: ["site-ops-summary", projectId] });

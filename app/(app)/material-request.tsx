@@ -5,6 +5,7 @@ import {
 import { useState } from "react";
 import { useProjects } from "@/src/hooks/useProjects";
 import { useCreateMR, useSubmitMR } from "@/src/hooks/useInventory";
+import { SyncBanner } from "@/src/components/SyncBanner";
 
 export default function MaterialRequestScreen() {
   const { data: projects } = useProjects();
@@ -15,6 +16,7 @@ export default function MaterialRequestScreen() {
   if (step === "select") {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <SyncBanner />
         <Text style={styles.title}>Material Request</Text>
         <Text style={styles.sub}>Select project to raise a request</Text>
         {projects?.filter((p: any) => p.status === "active").map((p: any) => (

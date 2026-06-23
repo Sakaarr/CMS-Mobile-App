@@ -5,6 +5,7 @@ import {
 import { useState } from "react";
 import { useProjects } from "@/src/hooks/useProjects";
 import { useCreateDPR } from "@/src/hooks/useSiteOps";
+import { SyncBanner } from "@/src/components/SyncBanner";
 
 const WEATHER_OPTIONS = ["sunny", "cloudy", "rainy", "foggy", "stormy"];
 
@@ -16,6 +17,7 @@ export default function DPRScreen() {
   if (step === "select") {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <SyncBanner />
         <Text style={styles.title}>Daily Progress Report</Text>
         <Text style={styles.sub}>Select a project to start today's DPR</Text>
         {isLoading ? (
