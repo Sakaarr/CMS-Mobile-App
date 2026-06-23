@@ -2,10 +2,13 @@ import {
   View, Text, ScrollView, StyleSheet,
   TouchableOpacity, ActivityIndicator,
   TextInput, Linking, Alert,
+  RefreshControl,
 } from "react-native";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProjects } from "@/src/hooks/useProjects";
 import { useDocuments, useDocumentSummary } from "@/src/hooks/useDocuments";
+import { SyncBanner } from "@/src/components/SyncBanner";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   drawing: "📐",
@@ -36,10 +39,22 @@ export default function DocumentsScreen() {
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [search, setSearch] = useState("");
   const [step, setStep] = useState<"select" | "list">("select");
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    setRefreshing(false);
+  }, [queryClient]);
 
   if (step === "select") {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />}
+      >
+        <SyncBanner />
         <Text style={styles.title}>Documents</Text>
         <Text style={styles.sub}>Select project to browse files</Text>
         {projects?.filter((p: any) => p.status === "active").map((p: any) => (
@@ -75,11 +90,19 @@ function DocumentList({ project, search, setSearch, onBack }: {
   setSearch: (s: string) => void;
   onBack: () => void;
 }) {
+  const qc = useQueryClient();
   const { data: docsData, isLoading } = useDocuments(project.id, {
     search: search || undefined,
   });
   const { data: summary } = useDocumentSummary(project.id);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await qc.invalidateQueries({ queryKey: ["documents", project.id] });
+    await qc.invalidateQueries({ queryKey: ["document-summary", project.id] });
+    setRefreshing(false);
+  }, [qc, project.id]);
 
   const documents = docsData?.data ?? [];
 
@@ -89,6 +112,7 @@ function DocumentList({ project, search, setSearch, onBack }: {
 
   return (
     <View style={styles.container}>
+      <SyncBanner />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backRow}>
@@ -149,6 +173,7 @@ function DocumentList({ project, search, setSearch, onBack }: {
         style={styles.list}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />}
       >
         {isLoading ? (
           <ActivityIndicator style={{ marginTop: 40 }} color="#2563eb" />

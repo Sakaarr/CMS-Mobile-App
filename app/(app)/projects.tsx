@@ -1,14 +1,24 @@
 import {
   View, Text, ScrollView, StyleSheet,
   ActivityIndicator, TouchableOpacity, TextInput,
+  RefreshControl,
 } from "react-native";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProjects } from "@/src/hooks/useProjects";
+import { SyncBanner } from "@/src/components/SyncBanner";
 import { router } from "expo-router";
 
 export default function ProjectsScreen() {
   const [search, setSearch] = useState("");
   const { data: projects, isLoading } = useProjects();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    setRefreshing(false);
+  }, [queryClient]);
 
   const filtered = projects?.filter((p: any) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -17,6 +27,7 @@ export default function ProjectsScreen() {
 
   return (
     <View style={styles.container}>
+      <SyncBanner />
       <View style={styles.searchWrap}>
         <TextInput
           style={styles.search}
@@ -30,7 +41,10 @@ export default function ProjectsScreen() {
       {isLoading ? (
         <ActivityIndicator style={{ marginTop: 40 }} color="#2563eb" />
       ) : (
-        <ScrollView contentContainerStyle={styles.list}>
+        <ScrollView
+          contentContainerStyle={styles.list}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />}
+        >
           {filtered.length === 0 ? (
             <Text style={styles.empty}>No projects found</Text>
           ) : (
