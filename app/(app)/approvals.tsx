@@ -6,6 +6,7 @@ import {
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/src/lib/api";
+import { SyncBanner } from "@/src/components/SyncBanner";
 
 const MODULE_EMOJI: Record<string, string> = {
   finance: "💰", procurement: "📋", inventory: "📦",
@@ -140,6 +141,7 @@ export default function ApprovalsScreen() {
 
   return (
     <View style={s.container}>
+      <SyncBanner />
       <View style={s.header}>
         <Text style={s.title}>Approvals</Text>
         <Text style={s.sub}>{data?.total ?? 0} pending</Text>

@@ -1,8 +1,10 @@
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   TextInput, ActivityIndicator, Alert,
+  RefreshControl,
 } from "react-native";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useProjects } from "@/src/hooks/useProjects";
 import { useCreateDPR } from "@/src/hooks/useSiteOps";
 import { SyncBanner } from "@/src/components/SyncBanner";
@@ -13,10 +15,21 @@ export default function DPRScreen() {
   const { data: projects, isLoading } = useProjects();
   const [selectedProject, setSelectedProject] = useState<any>(null);
   const [step, setStep] = useState<"select" | "form">("select");
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    setRefreshing(false);
+  }, [queryClient]);
 
   if (step === "select") {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563eb" />}
+      >
         <SyncBanner />
         <Text style={styles.title}>Daily Progress Report</Text>
         <Text style={styles.sub}>Select a project to start today's DPR</Text>
