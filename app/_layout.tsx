@@ -7,6 +7,7 @@ import {
   processQueue,
 } from "@/src/lib/offline";
 import { AppState, AppStateStatus } from "react-native";
+import { ErrorBoundary } from "@/src/components/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -29,8 +30,10 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <Stack screenOptions={{ headerShown: false }} />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
