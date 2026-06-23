@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { useProjects } from "@/src/hooks/useProjects";
-import { useDocuments, useDocumentSummary } from "@/src/hooks/useDocuments";
+import { useDocuments, useDocumentSummary, useUploadDocument } from "@/src/hooks/useDocuments";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   drawing: "📐",
@@ -69,6 +69,85 @@ export default function DocumentsScreen() {
   );
 }
 
+function UploadDocumentForm({ project, onBack }: { project: any; onBack: () => void }) {
+  const uploadDoc = useUploadDocument(project.id);
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("other");
+  const [fileName, setFileName] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
+  const [description, setDescription] = useState("");
+  const [tags, setTags] = useState("");
+
+  const CATEGORIES = ["drawing", "contract", "specification", "report", "photo", "certificate", "permit", "invoice", "rfi", "submittal", "meeting_minutes", "other"];
+
+  const submit = async () => {
+    if (!title || !fileName || !fileUrl) {
+      Alert.alert("Error", "Title, file name, and file URL are required");
+      return;
+    }
+    try {
+      await uploadDoc.mutateAsync({
+        title, category, file_name: fileName, file_url: fileUrl,
+        description: description || undefined, tags: tags || undefined,
+      });
+      Alert.alert("Success", "Document uploaded", [{ text: "OK", onPress: onBack }]);
+    } catch (e: any) {
+      Alert.alert("Error", e?.response?.data?.message ?? "Failed to upload document");
+    }
+  };
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <TouchableOpacity onPress={onBack} style={styles.backRowInner}><Text style={styles.backText}>← Documents</Text></TouchableOpacity>
+      <Text style={styles.title}>Upload Document</Text>
+      <Text style={styles.sub}>{project.name}</Text>
+
+      <Text style={styles.label}>Title *</Text>
+      <TextInput style={docInput} placeholder="Document title" value={title} onChangeText={setTitle} />
+
+      <Text style={styles.label}>Category</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+        {CATEGORIES.map(c => (
+          <TouchableOpacity key={c} style={[docChip, category === c && docChipActive]} onPress={() => setCategory(c)}>
+            <Text style={[docChipText, category === c && docChipTextActive]}>{c.replace(/_/g, " ")}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <Text style={styles.label}>File name *</Text>
+      <TextInput style={docInput} placeholder="e.g. structural-drawing-r1.pdf" value={fileName} onChangeText={setFileName} />
+
+      <Text style={styles.label}>File URL *</Text>
+      <TextInput style={docInput} placeholder="https://..." value={fileUrl} onChangeText={setFileUrl} autoCapitalize="none" />
+
+      <Text style={styles.label}>Description</Text>
+      <TextInput style={[docInput, styles.textarea]} multiline numberOfLines={3} placeholder="Brief description..." value={description} onChangeText={setDescription} />
+
+      <Text style={styles.label}>Tags (comma-separated)</Text>
+      <TextInput style={docInput} placeholder="e.g. structural, foundation" value={tags} onChangeText={setTags} />
+
+      <TouchableOpacity style={[styles.openBtn, uploadDoc.isPending && styles.btnDisabled]} onPress={submit} disabled={uploadDoc.isPending}>
+        {uploadDoc.isPending ? <ActivityIndicator color="#fff" /> : <Text style={styles.openBtnText}>📤 Upload Document</Text>}
+      </TouchableOpacity>
+    </ScrollView>
+  );
+}
+
+const docInput = {
+  borderWidth: 1, borderColor: "#d1d5db", borderRadius: 8,
+  paddingHorizontal: 10, paddingVertical: 8, fontSize: 14,
+  color: "#111827", backgroundColor: "#fff", marginBottom: 8,
+};
+
+const docChip = {
+  paddingHorizontal: 12, paddingVertical: 7, borderRadius: 99,
+  borderWidth: 1, borderColor: "#d1d5db", backgroundColor: "#fff", marginRight: 8, marginBottom: 8,
+};
+
+const docChipActive = { backgroundColor: "#2563eb", borderColor: "#2563eb" };
+const docChipText = { fontSize: 12, color: "#4b5563", textTransform: "capitalize" as const };
+const docChipTextActive = { color: "#fff" };
+
 function DocumentList({ project, search, setSearch, onBack }: {
   project: any;
   search: string;
@@ -80,11 +159,16 @@ function DocumentList({ project, search, setSearch, onBack }: {
   });
   const { data: summary } = useDocumentSummary(project.id);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
+  const [mode, setMode] = useState<"list" | "upload">("list");
 
   const documents = docsData?.data ?? [];
 
   if (selectedDoc) {
     return <DocumentDetail doc={selectedDoc} onBack={() => setSelectedDoc(null)} />;
+  }
+
+  if (mode === "upload") {
+    return <UploadDocumentForm project={project} onBack={() => setMode("list")} />;
   }
 
   return (
@@ -94,7 +178,12 @@ function DocumentList({ project, search, setSearch, onBack }: {
         <TouchableOpacity onPress={onBack} style={styles.backRow}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>{project.name}</Text>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={styles.title}>{project.name}</Text>
+          <TouchableOpacity style={styles.uploadBtn} onPress={() => setMode("upload")}>
+            <Text style={styles.uploadBtnText}>+ Upload</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.sub}>Documents & drawings</Text>
       </View>
 
@@ -426,4 +515,13 @@ const styles = StyleSheet.create({
     paddingVertical: 14, alignItems: "center", marginTop: 20,
   },
   openBtnText: { color: "#fff", fontSize: 15, fontWeight: "600" },
+  uploadBtn: {
+    backgroundColor: "#2563eb", borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  uploadBtnText: { color: "#fff", fontSize: 13, fontWeight: "600" },
+  btnDisabled: { opacity: 0.6 },
+  label: { fontSize: 13, fontWeight: "500", color: "#374151", marginTop: 12, marginBottom: 4 },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", marginBottom: 4 },
+  textarea: { height: 80, textAlignVertical: "top" },
 });

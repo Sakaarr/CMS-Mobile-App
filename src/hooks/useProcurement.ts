@@ -141,3 +141,23 @@ export function useRFQs(projectId: string) {
     enabled: !!projectId,
   });
 }
+
+export function useCreateVendor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      apiClient.post("/vendors", data),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["vendors"] }),
+  });
+}
+
+export function useCreateRFQ(projectId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: any) =>
+      apiClient.post(`/projects/${projectId}/rfqs`, data),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: ["rfqs", projectId] }),
+  });
+}

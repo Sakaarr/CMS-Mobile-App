@@ -3,6 +3,7 @@ import { Tabs } from "expo-router";
 import { useAuthStore } from "@/src/store/auth.store";
 import { useThemeStore } from "@/src/store/theme.store";
 import { useFetchPermissions, useHasPermission } from "@/src/hooks/usePermissions";
+import { usePermStore } from "@/src/hooks/usePermissions";
 import { router } from "expo-router";
 import { View, Text } from "react-native";
 
@@ -10,8 +11,8 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     overview: "📊", projects: "📁", dpr: "📋",
     "material-request": "📦", expense: "🧾",
-    boq: "💰", safety: "🛡️", documents: "📂",
-    settings: "⚙️",
+    boq: "💰", safety: "🛡️", procurement: "🏢",
+    documents: "📂", approvals: "✅", settings: "⚙️",
   };
   return (
     <View style={{ alignItems: "center" }}>
@@ -38,6 +39,9 @@ export default function AppLayout() {
   const canFinance = useHasPermission("can_finance");
   const canQuality = useHasPermission("can_quality");
   const canDocuments = useHasPermission("can_documents");
+  const canProcurement = useHasPermission("can_procurement");
+
+  const hasAnyApproval = canFinance || canProcurement || canInventory || canBOQ || canDocuments;
 
   useEffect(() => {
     loadTheme();
@@ -66,6 +70,14 @@ export default function AppLayout() {
         options={{
           title: "Projects",
           tabBarIcon: ({ focused }) => <TabIcon name="projects" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="procurement"
+        options={{
+          title: "Procurement",
+          href: canProcurement ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon name="procurement" focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -103,7 +115,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="safety"
         options={{
-          title: "Safety",
+          title: "Quality",
           href: canQuality ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon name="safety" focused={focused} />,
         }}
@@ -114,6 +126,14 @@ export default function AppLayout() {
           title: "Documents",
           href: canDocuments ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon name="documents" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="approvals"
+        options={{
+          title: "Approvals",
+          href: hasAnyApproval ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon name="approvals" focused={focused} />,
         }}
       />
       <Tabs.Screen
