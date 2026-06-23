@@ -47,3 +47,36 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+import * as FileSystem from "expo-file-system";
+import { Alert, Platform } from "react-native";
+
+export async function downloadFile(endpoint: string, filename: string) {
+  const token = await getItem("access_token");
+  const tenantSlug = await getItem("tenant_slug");
+  const url = `${API_BASE}${endpoint}`;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (tenantSlug) headers["X-Tenant-Slug"] = tenantSlug;
+
+  try {
+    const downloadResumable = FileSystem.createDownloadResumable(
+      url,
+      FileSystem.documentDirectory + filename,
+      { headers }
+    );
+    const result = await downloadResumable.downloadAsync();
+    if (result?.uri) {
+      try {
+        const Sharing = require("expo-sharing");
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(result.uri);
+          return;
+        }
+      } catch {}
+      Alert.alert("Downloaded", `File saved to: ${result.uri}`);
+    }
+  } catch (e: any) {
+    Alert.alert("Download failed", e?.message ?? "Unknown error");
+  }
+}
