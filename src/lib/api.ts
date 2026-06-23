@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Platform } from "react-native";
 import { deleteItem, getItem, setItem } from "@/src/lib/storage";
+import { useAuthStore } from "@/src/store/auth.store";
 
 const LOCAL_API_HOST = Platform.select({
   android: "http://10.0.2.2:8000",
@@ -38,9 +39,7 @@ apiClient.interceptors.response.use(
           error.config.headers.Authorization = `Bearer ${access_token}`;
           return axios(error.config);
         } catch {
-          await deleteItem("access_token");
-          await deleteItem("refresh_token");
-          await deleteItem("tenant_slug");
+          await useAuthStore.getState().logout();
         }
       }
     }
@@ -49,7 +48,7 @@ apiClient.interceptors.response.use(
 );
 
 import * as FileSystem from "expo-file-system";
-import { Alert, Platform } from "react-native";
+import { Alert } from "react-native";
 
 export async function downloadFile(endpoint: string, filename: string) {
   const token = await getItem("access_token");
