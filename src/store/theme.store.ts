@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import * as SecureStore from "expo-secure-store";
+import { getItem, setItem } from "@/src/lib/storage";
 
 type Theme = "light" | "dark" | "system";
 
@@ -12,12 +12,12 @@ interface ThemeState {
 export const useThemeStore = create<ThemeState>((set) => ({
   theme: "system",
   setTheme: async (theme) => {
-    await SecureStore.setItemAsync("app_theme", theme);
+    await setItem("app_theme", theme);
     set({ theme });
   },
   loadTheme: async () => {
     try {
-      const saved = await SecureStore.getItemAsync("app_theme");
+      const saved = await getItem("app_theme");
       if (saved) set({ theme: saved as Theme });
     } catch {}
   },
