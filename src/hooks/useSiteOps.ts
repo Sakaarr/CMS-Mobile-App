@@ -28,6 +28,7 @@ export interface WorkItem {
   unit: string;
   planned_quantity: number;
   achieved_quantity: number;
+  boq_item_id?: string | null;
   remarks: string | null;
   location: string | null;
 }

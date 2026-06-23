@@ -39,6 +39,7 @@ export interface Expense {
   total_amount: number;
   expense_date: string;
   vendor_name: string | null;
+  boq_item_id?: string | null;
 }
 
 export interface ChangeOrder {

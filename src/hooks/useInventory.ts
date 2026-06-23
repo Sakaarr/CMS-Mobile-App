@@ -43,6 +43,7 @@ export interface MRItem {
   requested_quantity: number;
   approved_quantity: number;
   issued_quantity: number;
+  boq_item_id?: string | null;
 }
 
 export function useWarehouses(projectId?: string) {

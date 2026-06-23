@@ -10,6 +10,7 @@ import { useBudgetVersions } from "@/src/hooks/useBoq";
 import { useProcurementStats } from "@/src/hooks/useProcurement";
 import { useSiteOpsSummary } from "@/src/hooks/useSiteOps";
 import { useFinanceSummary } from "@/src/hooks/useFinance";
+import { downloadFile } from "@/src/lib/api";
 
 const { width } = Dimensions.get("window");
 
@@ -330,7 +331,27 @@ export default function ProjectDetailScreen() {
               <View key={v.id} style={styles.infoCard}>
                 <View style={styles.versionHeader}>
                   <Text style={styles.versionTitle}>v{v.version_number} — {v.name}</Text>
-                  <StatusBadge status={v.status} />
+                  <View style={{ flexDirection: "row", gap: 6, alignItems: "center" }}>
+                    <TouchableOpacity
+                      onPress={() => downloadFile(
+                        `/projects/${id}/budget-versions/${v.id}/pdf`,
+                        `boq-v${v.version_number}.pdf`
+                      )}
+                      style={styles.downloadBtn}
+                    >
+                      <Text style={styles.downloadBtnText}>PDF</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => downloadFile(
+                        `/projects/${id}/budget-versions/${v.id}/xlsx`,
+                        `boq-v${v.version_number}.xlsx`
+                      )}
+                      style={styles.downloadBtn}
+                    >
+                      <Text style={styles.downloadBtnText}>XLSX</Text>
+                    </TouchableOpacity>
+                    <StatusBadge status={v.status} />
+                  </View>
                 </View>
                 <View style={styles.budgetGrid}>
                   {[
@@ -618,4 +639,9 @@ const styles = StyleSheet.create({
   },
   quickBtnIcon: { fontSize: 24 },
   quickBtnText: { fontSize: 11, color: "#374151", fontWeight: "500", textAlign: "center" },
+  downloadBtn: {
+    backgroundColor: "#2563eb", borderRadius: 6,
+    paddingHorizontal: 10, paddingVertical: 5,
+  },
+  downloadBtnText: { fontSize: 10, color: "#fff", fontWeight: "600" },
 });
