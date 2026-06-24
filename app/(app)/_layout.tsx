@@ -10,8 +10,8 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     overview: "📊", projects: "📁", dpr: "📋",
     "material-request": "📦", expense: "🧾",
-    boq: "💰", safety: "🛡️", documents: "📂",
-    settings: "⚙️",
+    boq: "💰", safety: "🛡️", procurement: "📋",
+    documents: "📂", settings: "⚙️",
   };
   return (
     <View style={{ alignItems: "center" }}>
@@ -35,6 +35,7 @@ export default function AppLayout() {
   const canBOQ = useHasPermission("can_boq");
   const canInventory = useHasPermission("can_inventory");
   const canSiteOps = useHasPermission("can_site_ops");
+  const canProcurement = useHasPermission("can_procurement");
   const canFinance = useHasPermission("can_finance");
   const canQuality = useHasPermission("can_quality");
   const canDocuments = useHasPermission("can_documents");
@@ -114,6 +115,14 @@ export default function AppLayout() {
           title: "Documents",
           href: canDocuments ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon name="documents" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="procurement"
+        options={{
+          title: "Procure",
+          href: canProcurement ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon name="procurement" focused={focused} />,
         }}
       />
       <Tabs.Screen

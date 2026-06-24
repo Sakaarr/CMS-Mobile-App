@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
 import { apiClient } from "@/src/lib/api";
 
 const QUEUE_KEY = "offline_mutation_queue";
@@ -33,33 +34,30 @@ export function isOnline() {
 
 async function checkNetwork(): Promise<boolean> {
   try {
-    const res = await apiClient.head("/health", { timeout: 5000 });
-    return res.status < 500;
+    const state = await NetInfo.fetch();
+    return state.isConnected ?? true;
   } catch {
     return false;
   }
 }
 
-let _interval: ReturnType<typeof setInterval> | null = null;
-export function startNetworkMonitor(intervalMs = 15_000) {
-  checkNetwork().then((ok) => {
-    _isOnline = ok;
-  });
-  if (_interval) clearInterval(_interval);
-  _interval = setInterval(async () => {
-    const ok = await checkNetwork();
-    if (ok !== _isOnline) {
-      _isOnline = ok;
-      _listeners.forEach((fn) => fn(ok));
-      if (ok) processQueue();
+let _unsubscribe: (() => void) | null = null;
+export function startNetworkMonitor(_intervalMs?: number) {
+  if (_unsubscribe) _unsubscribe();
+  _unsubscribe = NetInfo.addEventListener((state) => {
+    const online = state.isConnected ?? true;
+    if (online !== _isOnline) {
+      _isOnline = online;
+      _listeners.forEach((fn) => fn(online));
+      if (online) processQueue();
     }
-  }, intervalMs);
+  });
 }
 
 export function stopNetworkMonitor() {
-  if (_interval) {
-    clearInterval(_interval);
-    _interval = null;
+  if (_unsubscribe) {
+    _unsubscribe();
+    _unsubscribe = null;
   }
 }
 
