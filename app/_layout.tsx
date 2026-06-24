@@ -8,6 +8,7 @@ import {
 } from "@/src/lib/offline";
 import { AppState, AppStateStatus } from "react-native";
 import { ErrorBoundary } from "@/src/components/ErrorBoundary";
+import { usePushNotifications } from "@/src/hooks/usePushNotifications";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -15,6 +16,8 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   const { loadFromStorage } = useAuthStore();
+
+  usePushNotifications();
 
   useEffect(() => {
     loadFromStorage();
