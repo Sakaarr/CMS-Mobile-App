@@ -11,12 +11,13 @@ export interface ModulePermissions {
   can_finance: boolean;
   can_quality: boolean;
   can_documents: boolean;
+  can_subcontractors: boolean;
 }
 
 const FULL_ACCESS: ModulePermissions = {
   can_projects: true, can_boq: true, can_procurement: true,
   can_inventory: true, can_site_ops: true, can_finance: true,
-  can_quality: true, can_documents: true,
+  can_quality: true, can_documents: true, can_subcontractors: true,
 };
 
 interface PermStore {

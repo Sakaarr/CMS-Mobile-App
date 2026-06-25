@@ -9,7 +9,7 @@ import { View, Text } from "react-native";
 function TabIcon({ name, focused }: { name: string; focused: boolean }) {
   const icons: Record<string, string> = {
     overview: "📊", projects: "📁", dpr: "📋",
-    "material-request": "📦", expense: "🧾",
+    subcontractors: "👷", "material-request": "📦", expense: "🧾",
     boq: "💰", safety: "🛡️", procurement: "📋",
     documents: "📂", settings: "⚙️",
   };
@@ -39,6 +39,7 @@ export default function AppLayout() {
   const canFinance = useHasPermission("can_finance");
   const canQuality = useHasPermission("can_quality");
   const canDocuments = useHasPermission("can_documents");
+  const canSubcontractors = useHasPermission("can_subcontractors");
 
   useEffect(() => {
     loadTheme();
@@ -115,6 +116,15 @@ export default function AppLayout() {
           title: "Documents",
           href: canDocuments ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon name="documents" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+      <Tabs.Screen
+        name="subcontractors"
+        options={{
+          title: "Subcontractors",
+          href: canSubcontractors ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon name="subcontractors" focused={focused} />,
         }}
       />
       <Tabs.Screen
